@@ -1,0 +1,11 @@
+﻿Build started 1/15/2016 5:32:18 PM.
+     1>Project "C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\COMP371_hw1\COMP371_hw1.vcxproj" on node 2 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\Debug\COMP371_hw1.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\glfw /LIBPATH:..\glew glew32.lib glu32.lib opengl32.lib glfw3dll.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\Debug\COMP371_hw1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\Debug\COMP371_hw1.lib" /MACHINE:X86 Debug\main.obj
+         Debug\stdafx.obj
+         COMP371_hw1.vcxproj -> C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\Debug\COMP371_hw1.exe
+     1>Done Building Project "C:\Users\Vladimir\Desktop\Template\COMP371_hw1_template\COMP371_hw1\COMP371_hw1.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.72
