@@ -50,6 +50,22 @@ static const GLfloat g_vertex_buffer_data[] = {
 	0.0f,  1.0f, 0.0f,
 };
 
+const GLuint WIDTH = 800, HEIGHT = 800;
+
+GLfloat* profile;
+int profileSize;
+GLfloat* tragectory;
+int tragectorySize;
+
+GLfloat* points;
+int pointsSize;
+GLfloat* lines;
+int linesSize;
+GLfloat* triangles;
+int trianglesSize;
+
+ifstream file;
+
 ///Handle the keyboard input
 void keyPressed(GLFWwindow *_window, int key, int scancode, int action, int mods) {
 	switch (key) {
@@ -212,7 +228,108 @@ GLuint loadShaders(std::string vertex_shader_path, std::string fragment_shader_p
 
 int main() {
 
+	cout << "Enter the name of the file";
+
+	string filename;
+	//cin >> filename;
+
+	filename = "translational_shape.out";
+
+	file.open(filename, ios::in);
+
+	if (!file.is_open())
+	{
+		cout << "File name is invalid";
+		system("pause");
+		return 1;
+	}
+
+	int mode;
+	file >> mode;
+
+	if (mode == 0)
+	{
+		file >> profileSize;
+		profileSize *= 3;
+		profile = new GLfloat[profileSize];
+
+		for (int i = 0; i < profileSize; i++)
+		{
+			file >> profile[i];
+		}
+
+		file >> tragectorySize;
+		tragectorySize *= 3;
+		tragectory = new GLfloat[tragectorySize];
+
+		for (int i = 0; i < tragectorySize; i++)
+		{
+			file >> tragectory[i];
+		}
+
+		glm::vec3 offset(tragectory[0], tragectory[1], tragectory[2]);
+
+		cout << endl;
+
+		for (int i = 0; i < tragectorySize / 3; i++)
+		{
+			tragectory[i * 3] -= offset.x;
+			tragectory[i * 3 + 1] -= offset.y;
+			tragectory[i * 3 + 2] -= offset.z;
+
+			/*tragectory[i * 3] -= tragectory[0];
+			tragectory[i * 3 + 1] -= tragectory[1];
+			tragectory[i * 3 + 2] -= tragectory[2];*/
+
+			cout << tragectory[i * 3] << " " << tragectory[i * 3 + 1] << " " << tragectory[i * 3 + 2] << endl;
+		}
+
+		pointsSize = (profileSize / 3) * (tragectorySize / 3) * 3;
+		points = new GLfloat[pointsSize];
+
+		cout << endl;
+
+		for (int i = 0; i < profileSize / 3; i++)
+		{
+			for (int j = 0; j < tragectorySize / 3; j++)
+			{
+				for (int k = 0; k < 3; k++)
+				{
+					points[i * 3 + j * 3 + k] = profile[i * 3 + k] + tragectory[j * 3 + k];
+
+					
+				}
+
+				cout << points[i * 3 + j * 3] << " " << points[i * 3 + j * 3 + 1] << " " << points[i * 3 + j * 3 + 2] << endl;
+			}
+		}
+
+		linesSize = pointsSize * 2 - 3;
+		lines = new GLfloat[linesSize];
+
+		cout << endl;
+
+		for (int i = 0; i < (pointsSize - 3) / 3; i++)
+		{
+			lines[i * 3 * 2] = points[i * 3];
+			lines[i * 3 * 2 + 1] = points[i * 3 + 1];
+			lines[i * 3 * 2 + 2] = points[i * 3 + 2];
+			lines[i * 3 * 2 + 3] = points[i * 3 + 3];
+			lines[i * 3 * 2 + 4] = points[i * 3 + 4];
+			lines[i * 3 * 2 + 5] = points[i * 3 + 5];
+
+			cout << lines[i * 3 * 2] << " " << lines[i * 3 * 2 + 1] << " " << lines[i * 3 * 2 + 2];
+			cout << " to " << lines[i * 3 * 2 + 3] << " " << lines[i * 3 * 2 + 4] << " " << lines[i * 3 * 2 + 5] << endl;
+		}
+
+	}
+
+
+
 	initialize();
+
+	
+
 
 	///Load the shaders
 	shader_program = loadShaders("COMP371_hw1.vs", "COMP371_hw1.fs");
@@ -226,7 +343,7 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines[0]) * linesSize, &lines[0], GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -238,6 +355,7 @@ int main() {
 		);
 
 
+	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -5.0f));
 
 	while (!glfwWindowShouldClose(window)) {
 		// wipe the drawing surface clear
@@ -247,6 +365,13 @@ int main() {
 
 		glUseProgram(shader_program);
 
+		//proj_matrix = glm::perspective(200.0f, 1.0f, -5.0f, 5.0f);
+
+		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+		
+
+		//model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, 1.0f, 0.0f));
+
 		//Pass the values of the three matrices to the shaders
 		glUniformMatrix4fv(proj_matrix_id, 1, GL_FALSE, glm::value_ptr(proj_matrix));
 		glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -254,7 +379,7 @@ int main() {
 
 		glBindVertexArray(VAO);
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+		glDrawArrays(GL_LINES, 0, linesSize / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
 		glBindVertexArray(0);
 
