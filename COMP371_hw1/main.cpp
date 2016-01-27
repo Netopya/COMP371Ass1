@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <vector>
 #include <cctype>
+#include <sstream>
 
 using namespace std;
 
@@ -60,6 +61,10 @@ GLfloat* points_buffer;
 int points_buffer_size;
 GLfloat* lines_buffer;
 int lines_buffer_size;
+GLfloat* triangles_buffer;
+int triangles_buffer_size;
+int numStrips;
+int numStripLength;
 
 //GLfloat* profile;
 //int profileSize;
@@ -74,6 +79,13 @@ int linesSize;
 GLfloat* triangles;
 int trianglesSize;
 */
+
+string vec3tostring(glm::vec3 vec)
+{
+	std::stringstream ss;
+	ss << vec.x << ' ' << vec.y << ' ' << vec.z;
+	return ss.str();
+}
 
 ifstream file;
 
@@ -244,7 +256,8 @@ int main() {
 	string filename;
 	//cin >> filename;
 
-	filename = "translational_rectangle.out";
+	//filename = "translational_shape.out";
+	filename = "translational_hollow_box.out";
 
 	file.open(filename, ios::in);
 
@@ -337,6 +350,35 @@ int main() {
 		{
 			cout << lines_buffer[i + 0] << " " << lines_buffer[i + 1] << " " << lines_buffer[i + 2] << " to " << lines_buffer[i + 3] << " " << lines_buffer[i + 4] << " " << lines_buffer[i + 5] << endl;
 		}
+
+		vector<glm::vec3> trianglePoints;
+
+		numStrips = profile.size() - 1;
+		numStripLength = tragectory.size() * 2;
+
+		cout << endl << " TRIANGLE DATA " << endl;
+
+		for (unsigned i = 0; i < profile.size() - 1; i++)
+		{
+			for (unsigned j = 0; j < tragectory.size(); j++)
+			{
+				trianglePoints.push_back(glm::vec3(profile[i] + tragectory[j]));
+				trianglePoints.push_back(glm::vec3(profile[i + 1] + tragectory[j]));
+
+				cout << vec3tostring(trianglePoints[trianglePoints.size() - 2]) << " " << vec3tostring(trianglePoints[trianglePoints.size() - 1]) << endl;
+			}
+		}
+
+		triangles_buffer_size = trianglePoints.size() * 3;
+		triangles_buffer = new GLfloat[triangles_buffer_size];
+
+		for (int i = 0; i < triangles_buffer_size / 3; i++)
+		{
+			triangles_buffer[i * 3] = trianglePoints[i].x;
+			triangles_buffer[i * 3 + 1] = trianglePoints[i].y;
+			triangles_buffer[i * 3 + 2] = trianglePoints[i].z;
+		}
+
 
 		/*
 		file >> profileSize;
@@ -433,7 +475,7 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lines_buffer[0]) * lines_buffer_size, lines_buffer, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangles_buffer[0]) * triangles_buffer_size, triangles_buffer, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -460,7 +502,7 @@ int main() {
 		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		
 
-		model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model_matrix = glm::rotate(model_matrix, 0.0005f, glm::vec3(0.0f, 1.0f, 1.0f));
 
 		//Pass the values of the three matrices to the shaders
 		glUniformMatrix4fv(proj_matrix_id, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -469,7 +511,13 @@ int main() {
 
 		glBindVertexArray(VAO);
 		// Draw the triangle !
-		glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+		for (int i = 0; i < numStrips; i++)
+		{
+			glDrawArrays(GL_TRIANGLE_STRIP, i * numStripLength, numStripLength);
+		}
+		//glDrawArrays(GL_TRIANGLE_STRIP, numStripLength, numStripLength);
+
+		//glDrawArrays(GL_LINES, 0, triangles_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
 		glBindVertexArray(0);
 
