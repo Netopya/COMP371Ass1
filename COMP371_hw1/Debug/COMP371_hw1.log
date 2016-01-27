@@ -1,4 +1,4 @@
-﻿Build started 2016-01-26 8:15:23 PM.
+﻿Build started 2016-01-26 9:09:42 PM.
      1>Project "C:\Users\Michael\Documents\GitHub\COMP371Ass1\COMP371_hw1\COMP371_hw1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          D:\Programs\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I..\cimg /I..\glm\gtx /I..\glm\gtc /I..\glm\detail /I..\glm /I..\glfw /I..\glew /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
@@ -11,4 +11,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.85
+Time Elapsed 00:00:00.86

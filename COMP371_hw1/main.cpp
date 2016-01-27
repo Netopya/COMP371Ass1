@@ -52,17 +52,28 @@ static const GLfloat g_vertex_buffer_data[] = {
 
 const GLuint WIDTH = 800, HEIGHT = 800;
 
-GLfloat* profile;
-int profileSize;
-GLfloat* tragectory;
-int tragectorySize;
+vector<glm::vec3> profile;
+vector<glm::vec3> tragectory;
+vector<glm::vec3> points;
 
+GLfloat* points_buffer;
+int points_buffer_size;
+GLfloat* lines_buffer;
+int lines_buffer_size;
+
+//GLfloat* profile;
+//int profileSize;
+//GLfloat* tragectory;
+//int tragectorySize;
+
+/*
 GLfloat* points;
 int pointsSize;
 GLfloat* lines;
 int linesSize;
 GLfloat* triangles;
 int trianglesSize;
+*/
 
 ifstream file;
 
@@ -233,7 +244,7 @@ int main() {
 	string filename;
 	//cin >> filename;
 
-	filename = "translational_shape.out";
+	filename = "translational_rectangle.out";
 
 	file.open(filename, ios::in);
 
@@ -249,6 +260,85 @@ int main() {
 
 	if (mode == 0)
 	{
+		int profileSize;
+		file >> profileSize;
+
+		for (int i = 0; i < profileSize; i++)
+		{
+			GLfloat x, y, z;
+			file >> x >> y >> z;
+			profile.push_back(glm::vec3(x, y, z));
+		}
+
+
+		int tragectorySize;
+		file >> tragectorySize;
+
+		for (int i = 0; i < tragectorySize; i++)
+		{
+			GLfloat x, y, z;
+			file >> x >> y >> z;
+			tragectory.push_back(glm::vec3(x, y, z));
+		}
+
+		glm::vec3 offset(tragectory[0]);
+
+		for (unsigned i = 0; i < tragectory.size(); i++)
+		{
+			tragectory[i] -= offset;
+		}
+
+		for (unsigned i = 0; i < profile.size(); i++)
+		{
+			for (unsigned j = 0; j < tragectory.size(); j++)
+			{
+				points.push_back(glm::vec3(profile[i] + tragectory[j]));
+			}
+		}
+
+		points_buffer_size = points.size() * 3;
+		points_buffer = new GLfloat[points_buffer_size];
+
+		cout << endl;
+
+		for (unsigned i = 0; i < points.size(); i++)
+		{
+			points_buffer[i * 3] = points[i].x;
+			points_buffer[i * 3 + 1] = points[i].y;
+			points_buffer[i * 3 + 2] = points[i].z;
+
+			cout << points[i].x << " " << points[i].y << " " << points[i].z << endl;
+		}
+
+		lines_buffer_size = (tragectory.size() - 1) * profile.size() * 6;
+		lines_buffer = new GLfloat[lines_buffer_size];
+
+		int ts = (tragectory.size() - 1) * 6;
+
+		for (unsigned i = 0; i < profile.size(); i++)
+		{
+			for (unsigned j = 0; j < tragectory.size() - 1; j++)
+			{
+				lines_buffer[i * ts + j * 6] = profile[i].x + tragectory[j].x;
+				lines_buffer[i * ts + j * 6 + 1] = profile[i].y + tragectory[j].y;
+				lines_buffer[i * ts + j * 6 + 2] = profile[i].z + tragectory[j].z;
+
+				lines_buffer[i * ts + j * 6 + 3] = profile[i].x + tragectory[j + 1].x;
+				lines_buffer[i * ts + j * 6 + 4] = profile[i].y + tragectory[j + 1].y;
+				lines_buffer[i * ts + j * 6 + 5] = profile[i].z + tragectory[j + 1].z;
+
+				cout << lines_buffer[i * ts + j * 6] << " " << lines_buffer[i * ts + j * 6 + 1] << " " << lines_buffer[i * ts + j * 6 + 2] << " to " << lines_buffer[i * ts + j * 6 + 3] << " " << lines_buffer[i * ts + j * 6 + 4] << " " << lines_buffer[i * ts + j * 6 + 5] << " " << endl;
+			}
+		}
+		
+		//cout << "full"
+
+		for (int i = 0; i < lines_buffer_size / 6; i++)
+		{
+			cout << lines_buffer[i + 0] << " " << lines_buffer[i + 1] << " " << lines_buffer[i + 2] << " to " << lines_buffer[i + 3] << " " << lines_buffer[i + 4] << " " << lines_buffer[i + 5] << endl;
+		}
+
+		/*
 		file >> profileSize;
 		profileSize *= 3;
 		profile = new GLfloat[profileSize];
@@ -279,7 +369,7 @@ int main() {
 
 			/*tragectory[i * 3] -= tragectory[0];
 			tragectory[i * 3 + 1] -= tragectory[1];
-			tragectory[i * 3 + 2] -= tragectory[2];*/
+			tragectory[i * 3 + 2] -= tragectory[2];*//*
 
 			cout << tragectory[i * 3] << " " << tragectory[i * 3 + 1] << " " << tragectory[i * 3 + 2] << endl;
 		}
@@ -321,7 +411,7 @@ int main() {
 			cout << lines[i * 3 * 2] << " " << lines[i * 3 * 2 + 1] << " " << lines[i * 3 * 2 + 2];
 			cout << " to " << lines[i * 3 * 2 + 3] << " " << lines[i * 3 * 2 + 4] << " " << lines[i * 3 * 2 + 5] << endl;
 		}
-
+		*/
 	}
 
 
@@ -343,7 +433,7 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(lines[0]) * linesSize, &lines[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines_buffer[0]) * lines_buffer_size, lines_buffer, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -370,7 +460,7 @@ int main() {
 		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		
 
-		//model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		//Pass the values of the three matrices to the shaders
 		glUniformMatrix4fv(proj_matrix_id, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -379,7 +469,7 @@ int main() {
 
 		glBindVertexArray(VAO);
 		// Draw the triangle !
-		glDrawArrays(GL_LINES, 0, linesSize / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+		glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
 		glBindVertexArray(0);
 
