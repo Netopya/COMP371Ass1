@@ -39,6 +39,8 @@ glm::mat4 proj_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+enum ArrowKeys {none, left, right, up, down};
+ArrowKeys arrowKey;
 
 GLuint VBO, VAO, EBO;
 
@@ -54,7 +56,7 @@ static const GLfloat g_vertex_buffer_data[] = {
 const GLuint WIDTH = 800, HEIGHT = 800;
 
 vector<glm::vec3> profile;
-vector<glm::vec3> tragectory;
+vector<glm::vec3> trajectory;
 vector<glm::vec3> points;
 
 GLfloat* points_buffer;
@@ -68,7 +70,7 @@ int numStripLength;
 
 //GLfloat* profile;
 //int profileSize;
-//GLfloat* tragectory;
+//GLfloat* trajectory;
 //int tragectorySize;
 
 /*
@@ -91,9 +93,32 @@ ifstream file;
 
 ///Handle the keyboard input
 void keyPressed(GLFWwindow *_window, int key, int scancode, int action, int mods) {
-	switch (key) {
-	default: break;
+
+	if (action == GLFW_RELEASE)
+	{
+		arrowKey = ArrowKeys::none;
 	}
+	else if(action == GLFW_PRESS)
+	{
+		switch (key) {
+		case GLFW_KEY_LEFT:
+			arrowKey = ArrowKeys::left;
+			break;
+		case GLFW_KEY_RIGHT:
+			arrowKey = ArrowKeys::right;
+			break;
+		case GLFW_KEY_UP:
+			arrowKey = ArrowKeys::up;
+			break;
+		case GLFW_KEY_DOWN:
+			arrowKey = ArrowKeys::down;
+			break;
+
+		default: break;
+		}
+	}
+
+	
 	return;
 }
 
@@ -271,11 +296,13 @@ int main() {
 	int mode;
 	file >> mode;
 
+	//Translational Sweep Surface Definition
 	if (mode == 0)
 	{
 		int profileSize;
 		file >> profileSize;
 
+		// Collect points for the profile curve
 		for (int i = 0; i < profileSize; i++)
 		{
 			GLfloat x, y, z;
@@ -283,29 +310,31 @@ int main() {
 			profile.push_back(glm::vec3(x, y, z));
 		}
 
-
 		int tragectorySize;
 		file >> tragectorySize;
 
+		// Collect points for the trajectory curve
 		for (int i = 0; i < tragectorySize; i++)
 		{
 			GLfloat x, y, z;
 			file >> x >> y >> z;
-			tragectory.push_back(glm::vec3(x, y, z));
+			trajectory.push_back(glm::vec3(x, y, z));
 		}
 
-		glm::vec3 offset(tragectory[0]);
+		glm::vec3 offset(trajectory[0]);
 
-		for (unsigned i = 0; i < tragectory.size(); i++)
+		// Move the trajectory curve to the origin
+		for (unsigned i = 0; i < trajectory.size(); i++)
 		{
-			tragectory[i] -= offset;
+			trajectory[i] -= offset;
 		}
 
+		// Calculate all the points
 		for (unsigned i = 0; i < profile.size(); i++)
 		{
-			for (unsigned j = 0; j < tragectory.size(); j++)
+			for (unsigned j = 0; j < trajectory.size(); j++)
 			{
-				points.push_back(glm::vec3(profile[i] + tragectory[j]));
+				points.push_back(glm::vec3(profile[i] + trajectory[j]));
 			}
 		}
 
@@ -314,31 +343,33 @@ int main() {
 
 		cout << endl;
 
+		// Covert all the point vectors into a single array
 		for (unsigned i = 0; i < points.size(); i++)
 		{
 			points_buffer[i * 3] = points[i].x;
 			points_buffer[i * 3 + 1] = points[i].y;
 			points_buffer[i * 3 + 2] = points[i].z;
 
-			cout << points[i].x << " " << points[i].y << " " << points[i].z << endl;
+			// Debug output
+			cout << vec3tostring(points[i]) << endl;
 		}
 
-		lines_buffer_size = (tragectory.size() - 1) * profile.size() * 6;
+		lines_buffer_size = (trajectory.size() - 1) * profile.size() * 6;
 		lines_buffer = new GLfloat[lines_buffer_size];
 
-		int ts = (tragectory.size() - 1) * 6;
+		int ts = (trajectory.size() - 1) * 6;
 
 		for (unsigned i = 0; i < profile.size(); i++)
 		{
-			for (unsigned j = 0; j < tragectory.size() - 1; j++)
+			for (unsigned j = 0; j < trajectory.size() - 1; j++)
 			{
-				lines_buffer[i * ts + j * 6] = profile[i].x + tragectory[j].x;
-				lines_buffer[i * ts + j * 6 + 1] = profile[i].y + tragectory[j].y;
-				lines_buffer[i * ts + j * 6 + 2] = profile[i].z + tragectory[j].z;
+				lines_buffer[i * ts + j * 6] = profile[i].x + trajectory[j].x;
+				lines_buffer[i * ts + j * 6 + 1] = profile[i].y + trajectory[j].y;
+				lines_buffer[i * ts + j * 6 + 2] = profile[i].z + trajectory[j].z;
 
-				lines_buffer[i * ts + j * 6 + 3] = profile[i].x + tragectory[j + 1].x;
-				lines_buffer[i * ts + j * 6 + 4] = profile[i].y + tragectory[j + 1].y;
-				lines_buffer[i * ts + j * 6 + 5] = profile[i].z + tragectory[j + 1].z;
+				lines_buffer[i * ts + j * 6 + 3] = profile[i].x + trajectory[j + 1].x;
+				lines_buffer[i * ts + j * 6 + 4] = profile[i].y + trajectory[j + 1].y;
+				lines_buffer[i * ts + j * 6 + 5] = profile[i].z + trajectory[j + 1].z;
 
 				cout << lines_buffer[i * ts + j * 6] << " " << lines_buffer[i * ts + j * 6 + 1] << " " << lines_buffer[i * ts + j * 6 + 2] << " to " << lines_buffer[i * ts + j * 6 + 3] << " " << lines_buffer[i * ts + j * 6 + 4] << " " << lines_buffer[i * ts + j * 6 + 5] << " " << endl;
 			}
@@ -354,16 +385,16 @@ int main() {
 		vector<glm::vec3> trianglePoints;
 
 		numStrips = profile.size() - 1;
-		numStripLength = tragectory.size() * 2;
+		numStripLength = trajectory.size() * 2;
 
 		cout << endl << " TRIANGLE DATA " << endl;
 
 		for (unsigned i = 0; i < profile.size() - 1; i++)
 		{
-			for (unsigned j = 0; j < tragectory.size(); j++)
+			for (unsigned j = 0; j < trajectory.size(); j++)
 			{
-				trianglePoints.push_back(glm::vec3(profile[i] + tragectory[j]));
-				trianglePoints.push_back(glm::vec3(profile[i + 1] + tragectory[j]));
+				trianglePoints.push_back(glm::vec3(profile[i] + trajectory[j]));
+				trianglePoints.push_back(glm::vec3(profile[i + 1] + trajectory[j]));
 
 				cout << vec3tostring(trianglePoints[trianglePoints.size() - 2]) << " " << vec3tostring(trianglePoints[trianglePoints.size() - 1]) << endl;
 			}
@@ -392,28 +423,28 @@ int main() {
 
 		file >> tragectorySize;
 		tragectorySize *= 3;
-		tragectory = new GLfloat[tragectorySize];
+		trajectory = new GLfloat[tragectorySize];
 
 		for (int i = 0; i < tragectorySize; i++)
 		{
-			file >> tragectory[i];
+			file >> trajectory[i];
 		}
 
-		glm::vec3 offset(tragectory[0], tragectory[1], tragectory[2]);
+		glm::vec3 offset(trajectory[0], trajectory[1], trajectory[2]);
 
 		cout << endl;
 
 		for (int i = 0; i < tragectorySize / 3; i++)
 		{
-			tragectory[i * 3] -= offset.x;
-			tragectory[i * 3 + 1] -= offset.y;
-			tragectory[i * 3 + 2] -= offset.z;
+			trajectory[i * 3] -= offset.x;
+			trajectory[i * 3 + 1] -= offset.y;
+			trajectory[i * 3 + 2] -= offset.z;
 
-			/*tragectory[i * 3] -= tragectory[0];
-			tragectory[i * 3 + 1] -= tragectory[1];
-			tragectory[i * 3 + 2] -= tragectory[2];*//*
+			/*trajectory[i * 3] -= trajectory[0];
+			trajectory[i * 3 + 1] -= trajectory[1];
+			trajectory[i * 3 + 2] -= trajectory[2];*//*
 
-			cout << tragectory[i * 3] << " " << tragectory[i * 3 + 1] << " " << tragectory[i * 3 + 2] << endl;
+			cout << trajectory[i * 3] << " " << trajectory[i * 3 + 1] << " " << trajectory[i * 3 + 2] << endl;
 		}
 
 		pointsSize = (profileSize / 3) * (tragectorySize / 3) * 3;
@@ -427,7 +458,7 @@ int main() {
 			{
 				for (int k = 0; k < 3; k++)
 				{
-					points[i * 3 + j * 3 + k] = profile[i * 3 + k] + tragectory[j * 3 + k];
+					points[i * 3 + j * 3 + k] = profile[i * 3 + k] + trajectory[j * 3 + k];
 
 					
 				}
@@ -487,7 +518,7 @@ int main() {
 		);
 
 
-	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -5.0f));
+	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f));
 
 	while (!glfwWindowShouldClose(window)) {
 		// wipe the drawing surface clear
@@ -502,7 +533,27 @@ int main() {
 		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		
 
-		model_matrix = glm::rotate(model_matrix, 0.0005f, glm::vec3(0.0f, 1.0f, 1.0f));
+		switch (arrowKey)
+		{
+		case ArrowKeys::none:
+			break;
+		case ArrowKeys::left:
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, 0.0f, 1.0f));
+			break;
+		case ArrowKeys::right:
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, 0.0f, -1.0f));
+			break;
+		case ArrowKeys::up:
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(1.0f, 0.0f, 0.0f));
+			break;
+		case ArrowKeys::down:
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(-1.0f, 0.0f, 0.0f));
+			break;
+		default:
+			break;
+		}
+
+		
 
 		//Pass the values of the three matrices to the shaders
 		glUniformMatrix4fv(proj_matrix_id, 1, GL_FALSE, glm::value_ptr(proj_matrix));
