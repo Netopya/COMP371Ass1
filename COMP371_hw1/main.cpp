@@ -19,6 +19,7 @@
 #include <vector>
 #include <cctype>
 #include <sstream>
+#include <gtx\rotate_vector.hpp>
 
 using namespace std;
 
@@ -54,6 +55,8 @@ static const GLfloat g_vertex_buffer_data[] = {
 };
 
 const GLuint WIDTH = 800, HEIGHT = 800;
+
+int mode;
 
 GLfloat* points_buffer;
 int points_buffer_size;
@@ -264,7 +267,9 @@ int main() {
 	//cin >> filename;
 
 	//filename = "translational_shape.out";
-	filename = "translational_hollow_box.out";
+	//filename = "translational_hollow_box.out";
+	filename = "rotational_cup.out";
+	//filename = "rotational_hat.out";
 
 	file.open(filename, ios::in);
 
@@ -275,7 +280,6 @@ int main() {
 		return 1;
 	}
 
-	int mode;
 	file >> mode;
 
 	//Translational Sweep Surface Definition
@@ -396,6 +400,62 @@ int main() {
 			triangles_buffer[i * 3 + 2] = trianglePoints[i].z;
 		}
 	}
+	else
+	{
+		int spans = 10;
+		//spans = mode;
+		GLfloat angle = 360 / 20;
+
+		int profileSize;
+		file >> profileSize;
+		
+		vector<glm::vec3> profile;
+
+		for (int i = 0; i < profileSize; i++)
+		{
+			GLfloat x, y, z;
+			file >> x >> y >> z;
+			profile.push_back(glm::vec3(x, y, z));
+		}
+
+		vector<glm::vec3> points(profile);
+
+		for (int i = 1; i < spans; i++)
+		{
+			for (unsigned j = 0; j < profile.size(); j++)
+			{
+				points.push_back(glm::rotateY(points[(i - 1)*profile.size() + j], angle));
+			}
+		}
+
+		lines_buffer_size = (profile.size() - 1) * spans * 6;
+		lines_buffer = new GLfloat[lines_buffer_size];
+
+		int ts = (profile.size() - 1) * 6;
+
+		for (unsigned i = 0; i < spans; i++)
+		{
+			for (unsigned j = 0; j < profile.size() - 1; j++)
+			{
+
+				//assert(i * ts + j * 6 > lines_buffer_size);
+				if (i * ts + j * 6 >= lines_buffer_size)
+				{
+					cout << "foo";
+				}
+
+				lines_buffer[i * ts + j * 6] = points[i * profile.size() + j].x;
+				lines_buffer[i * ts + j * 6 + 1] = points[i * profile.size() + j].y;
+				lines_buffer[i * ts + j * 6 + 2] = points[i * profile.size() + j].z;
+
+				lines_buffer[i * ts + j * 6 + 3] = points[i * profile.size() + j + 1].x;
+				lines_buffer[i * ts + j * 6 + 4] = points[i * profile.size() + j + 1].y;
+				lines_buffer[i * ts + j * 6 + 5] = points[i * profile.size() + j + 1].z;
+
+				cout << lines_buffer[i * ts + j * 6] << " " << lines_buffer[i * ts + j * 6 + 1] << " " << lines_buffer[i * ts + j * 6 + 2] << " to " << lines_buffer[i * ts + j * 6 + 3] << " " << lines_buffer[i * ts + j * 6 + 4] << " " << lines_buffer[i * ts + j * 6 + 5] << " " << endl;
+			}
+		}
+	}
 
 
 
@@ -416,7 +476,7 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(triangles_buffer[0]) * triangles_buffer_size, triangles_buffer, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lines_buffer[0]) * lines_buffer_size, lines_buffer, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -448,10 +508,10 @@ int main() {
 		case ArrowKeys::none:
 			break;
 		case ArrowKeys::left:
-			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, 0.0f, 1.0f));
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, 1.0f, 0.0f));
 			break;
 		case ArrowKeys::right:
-			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, 0.0f, -1.0f));
+			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(0.0f, -1.0f, 0.0f));
 			break;
 		case ArrowKeys::up:
 			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -474,11 +534,11 @@ int main() {
 		// Draw the triangle !
 		for (int i = 0; i < numStrips; i++)
 		{
-			glDrawArrays(GL_TRIANGLE_STRIP, i * numStripLength, numStripLength);
+			//glDrawArrays(GL_TRIANGLE_STRIP, i * numStripLength, numStripLength);
 		}
 		//glDrawArrays(GL_TRIANGLE_STRIP, numStripLength, numStripLength);
 
-		//glDrawArrays(GL_LINES, 0, triangles_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+		glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
 		glBindVertexArray(0);
 
