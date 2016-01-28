@@ -40,6 +40,8 @@ glm::mat4 proj_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+glm::mat4 up_matrix = {0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+
 enum ArrowKeys {none, left, right, up, down};
 ArrowKeys arrowKey;
 
@@ -402,7 +404,7 @@ int main() {
 	}
 	else
 	{
-		int spans = 200;
+		int spans = 10;
 		//spans = mode;
 		GLfloat angle = 2 * M_PI / spans;
 
@@ -541,22 +543,23 @@ int main() {
 
 		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		
+		
 
 		switch (arrowKey)
 		{
 		case ArrowKeys::none:
 			break;
 		case ArrowKeys::left:
-			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, 1.0f, 0.0f));
+			model_matrix =  glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::right:
-			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(0.0f, -1.0f, 0.0f));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::up:
-			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(1.0f, 0.0f, 0.0f));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::down:
-			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(-1.0f, 0.0f, 0.0f));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		default:
 			break;

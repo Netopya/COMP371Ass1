@@ -1,12 +1,12 @@
-﻿Build started 2016-01-28 4:18:36 PM.
+﻿Build started 2016-01-28 5:20:08 PM.
      1>Project "C:\Users\Michael\Documents\GitHub\COMP371Ass1\COMP371_hw1\COMP371_hw1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I..\cimg /I..\glm\gtx /I..\glm\gtc /I..\glm\detail /I..\glm /I..\glfw /I..\glew /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
-     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(407): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(436): warning C4018: '<': signed/unsigned mismatch
-     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(442): warning C4018: '>=': signed/unsigned mismatch
-     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(466): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(409): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(438): warning C4018: '<': signed/unsigned mismatch
+     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(444): warning C4018: '>=': signed/unsigned mismatch
+     1>c:\users\michael\documents\github\comp371ass1\comp371_hw1\main.cpp(468): warning C4018: '<': signed/unsigned mismatch
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Michael\Documents\GitHub\COMP371Ass1\Debug\COMP371_hw1.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\glfw /LIBPATH:..\glew glew32.lib glu32.lib opengl32.lib glfw3dll.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\Michael\Documents\GitHub\COMP371Ass1\Debug\COMP371_hw1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Michael\Documents\GitHub\COMP371Ass1\Debug\COMP371_hw1.lib" /MACHINE:X86 Debug\main.obj
          Debug\stdafx.obj
@@ -15,4 +15,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.02
+Time Elapsed 00:00:02.06
