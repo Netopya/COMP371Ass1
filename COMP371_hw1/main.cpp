@@ -55,10 +55,6 @@ static const GLfloat g_vertex_buffer_data[] = {
 
 const GLuint WIDTH = 800, HEIGHT = 800;
 
-vector<glm::vec3> profile;
-vector<glm::vec3> trajectory;
-vector<glm::vec3> points;
-
 GLfloat* points_buffer;
 int points_buffer_size;
 GLfloat* lines_buffer;
@@ -67,20 +63,6 @@ GLfloat* triangles_buffer;
 int triangles_buffer_size;
 int numStrips;
 int numStripLength;
-
-//GLfloat* profile;
-//int profileSize;
-//GLfloat* trajectory;
-//int tragectorySize;
-
-/*
-GLfloat* points;
-int pointsSize;
-GLfloat* lines;
-int linesSize;
-GLfloat* triangles;
-int trianglesSize;
-*/
 
 string vec3tostring(glm::vec3 vec)
 {
@@ -299,6 +281,10 @@ int main() {
 	//Translational Sweep Surface Definition
 	if (mode == 0)
 	{
+		vector<glm::vec3> profile;
+		vector<glm::vec3> trajectory;
+		vector<glm::vec3> points;
+
 		int profileSize;
 		file >> profileSize;
 
@@ -409,82 +395,6 @@ int main() {
 			triangles_buffer[i * 3 + 1] = trianglePoints[i].y;
 			triangles_buffer[i * 3 + 2] = trianglePoints[i].z;
 		}
-
-
-		/*
-		file >> profileSize;
-		profileSize *= 3;
-		profile = new GLfloat[profileSize];
-
-		for (int i = 0; i < profileSize; i++)
-		{
-			file >> profile[i];
-		}
-
-		file >> tragectorySize;
-		tragectorySize *= 3;
-		trajectory = new GLfloat[tragectorySize];
-
-		for (int i = 0; i < tragectorySize; i++)
-		{
-			file >> trajectory[i];
-		}
-
-		glm::vec3 offset(trajectory[0], trajectory[1], trajectory[2]);
-
-		cout << endl;
-
-		for (int i = 0; i < tragectorySize / 3; i++)
-		{
-			trajectory[i * 3] -= offset.x;
-			trajectory[i * 3 + 1] -= offset.y;
-			trajectory[i * 3 + 2] -= offset.z;
-
-			/*trajectory[i * 3] -= trajectory[0];
-			trajectory[i * 3 + 1] -= trajectory[1];
-			trajectory[i * 3 + 2] -= trajectory[2];*//*
-
-			cout << trajectory[i * 3] << " " << trajectory[i * 3 + 1] << " " << trajectory[i * 3 + 2] << endl;
-		}
-
-		pointsSize = (profileSize / 3) * (tragectorySize / 3) * 3;
-		points = new GLfloat[pointsSize];
-
-		cout << endl;
-
-		for (int i = 0; i < profileSize / 3; i++)
-		{
-			for (int j = 0; j < tragectorySize / 3; j++)
-			{
-				for (int k = 0; k < 3; k++)
-				{
-					points[i * 3 + j * 3 + k] = profile[i * 3 + k] + trajectory[j * 3 + k];
-
-					
-				}
-
-				cout << points[i * 3 + j * 3] << " " << points[i * 3 + j * 3 + 1] << " " << points[i * 3 + j * 3 + 2] << endl;
-			}
-		}
-
-		linesSize = pointsSize * 2 - 3;
-		lines = new GLfloat[linesSize];
-
-		cout << endl;
-
-		for (int i = 0; i < (pointsSize - 3) / 3; i++)
-		{
-			lines[i * 3 * 2] = points[i * 3];
-			lines[i * 3 * 2 + 1] = points[i * 3 + 1];
-			lines[i * 3 * 2 + 2] = points[i * 3 + 2];
-			lines[i * 3 * 2 + 3] = points[i * 3 + 3];
-			lines[i * 3 * 2 + 4] = points[i * 3 + 4];
-			lines[i * 3 * 2 + 5] = points[i * 3 + 5];
-
-			cout << lines[i * 3 * 2] << " " << lines[i * 3 * 2 + 1] << " " << lines[i * 3 * 2 + 2];
-			cout << " to " << lines[i * 3 * 2 + 3] << " " << lines[i * 3 * 2 + 4] << " " << lines[i * 3 * 2 + 5] << endl;
-		}
-		*/
 	}
 
 
