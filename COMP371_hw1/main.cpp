@@ -50,7 +50,11 @@ GLuint VBO, VAO, EBO;
 GLfloat point_size = 3.0f;
 
 // An array of 3 vectors which represents 3 vertices
-GLfloat* g_vertex_buffer_data;
+static const GLfloat g_vertex_buffer_data[] = {
+	-1.0f, -1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	0.0f,  1.0f, 0.0f,
+};
 
 const GLuint WIDTH = 800, HEIGHT = 800;
 
@@ -426,17 +430,6 @@ int main() {
 			}
 		}
 
-		points_buffer_size = points.size();
-		points_buffer = new GLfloat[points_buffer_size];
-
-		// Covert all the point vectors into a single array
-		for (unsigned i = 0; i < points.size(); i++)
-		{
-			points_buffer[i * 3] = points[i].x;
-			points_buffer[i * 3 + 1] = points[i].y;
-			points_buffer[i * 3 + 2] = points[i].z;
-		}
-
 		lines_buffer_size = (profile.size() - 1) * spans * 6;
 		lines_buffer = new GLfloat[lines_buffer_size];
 
@@ -506,28 +499,10 @@ int main() {
 	}
 
 
-	int vertex_buffer_size = points_buffer_size + lines_buffer_size + triangles_buffer_size;
-	int linesOffset = points_buffer_size;
-	int trianglesOffset = points_buffer_size + lines_buffer_size;
-
-	g_vertex_buffer_data = new GLfloat[vertex_buffer_size];
-
-	for (int i = 0; i < points_buffer_size; i++)
-	{
-		g_vertex_buffer_data[i] = points_buffer[i];
-	}
-
-	for (int i = 0; i < lines_buffer_size; i++)
-	{
-		g_vertex_buffer_data[linesOffset + i] = lines_buffer[i];
-	}
-
-	for (int i = 0; i < triangles_buffer_size; i++)
-	{
-		g_vertex_buffer_data[trianglesOffset + i] = triangles_buffer[i];
-	}
 
 	initialize();
+
+	
 
 
 	///Load the shaders
@@ -542,7 +517,7 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data[0]) * vertex_buffer_size, g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(triangles_buffer[0]) * triangles_buffer_size, triangles_buffer, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(
 		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -575,16 +550,16 @@ int main() {
 		case ArrowKeys::none:
 			break;
 		case ArrowKeys::left:
-			model_matrix =  glm::rotate(model_matrix, 0.05f, glm::vec3(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix =  glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::right:
-			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::up:
-			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::down:
-			model_matrix = glm::rotate(model_matrix, 0.05f, glm::vec3(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, 0.005f, glm::vec3(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		default:
 			break;
@@ -598,21 +573,12 @@ int main() {
 		glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
 		glBindVertexArray(VAO);
-
-		//glDrawArrays(GL_POINTS, 0, points_buffer_size / 3);
-
-		//glDrawArrays(GL_LINES, linesOffset, lines_buffer_size / 3);
-
-		for (int i = 0; i < numStrips; i++)
-		{
-			//glDrawArrays(GL_LINE_STRIP, trianglesOffset + (i * numStripLength), numStripLength);
-		}
-
-		/*
+		// Draw the triangle !
 		for (int i = 0; i < numStrips; i++)
 		{
 			glDrawArrays(GL_TRIANGLE_STRIP, i * numStripLength, numStripLength);
-		};*/
+		}
+		//glDrawArrays(GL_TRIANGLE_STRIP, numStripLength, numStripLength);
 
 		//glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
 
