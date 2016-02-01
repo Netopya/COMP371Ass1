@@ -48,14 +48,16 @@ ArrowKeys arrowKey;
 enum ViewMode {points, wireframe, triangles};
 ViewMode viewMode = ViewMode::triangles;
 
+enum ZoomMode {stay, in, out};
+ZoomMode zoomMode;
+
 GLuint VBO, VAO, EBO;
 
 GLfloat point_size = 3.0f;
 
-// An array of 3 vectors which represents 3 vertices
 GLfloat* g_vertex_buffer_data;
 
-const GLuint WIDTH = 800, HEIGHT = 800;
+const GLuint WIDTH = 800, HEIGHT = 600;
 
 int mode;
 
@@ -67,6 +69,9 @@ GLfloat* triangles_buffer;
 int triangles_buffer_size;
 int numStrips;
 int numStripLength;
+
+const float rotatationSpeed = 0.025f;
+const float zoomSpeed = 0.05f;
 
 string vec3tostring(glm::vec3 vec)
 {
@@ -118,6 +123,34 @@ void keyPressed(GLFWwindow *_window, int key, int scancode, int action, int mods
 }
 
 
+void mouseButtonPressed(GLFWwindow *_window, int button, int action, int mods)
+{
+	if (action == GLFW_RELEASE)
+	{
+		zoomMode = ZoomMode::stay;
+	}
+	else if (action == GLFW_PRESS)
+	{
+		switch (button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			zoomMode = ZoomMode::in;
+			break;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			zoomMode = ZoomMode::out;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void windowResized(GLFWwindow *windows, int width, int height)
+{
+	glViewport(0, 0, width, height);
+	proj_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 50.0f);
+}
+
 bool initialize() {
 	/// Initialize GL context and O/S window using the GLFW helper library
 	if (!glfwInit()) {
@@ -125,9 +158,9 @@ bool initialize() {
 		return false;
 	}
 
-	/// Create a window of size 640x480 and with title "Lecture 2: First Triangle"
+	// Create the window
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-	window = glfwCreateWindow(800, 800, "COMP371: Assignment 1", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "COMP371: Assignment 1", NULL, NULL);
 	if (!window) {
 		fprintf(stderr, "ERROR: could not open window with GLFW3\n");
 		glfwTerminate();
@@ -138,6 +171,8 @@ bool initialize() {
 	glfwGetWindowSize(window, &w, &h);
 	///Register the keyboard callback function: keyPressed(...)
 	glfwSetKeyCallback(window, keyPressed);
+	glfwSetMouseButtonCallback(window, mouseButtonPressed);
+	glfwSetWindowSizeCallback(window, windowResized);
 
 	glfwMakeContextCurrent(window);
 
@@ -574,6 +609,7 @@ int main() {
 
 
 	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f));
+	proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 50.0f);
 
 	while (!glfwWindowShouldClose(window)) {
 		// wipe the drawing surface clear
@@ -585,7 +621,27 @@ int main() {
 
 		//proj_matrix = glm::perspective(200.0f, 1.0f, -5.0f, 5.0f);
 
-		proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 50.0f);
+		if (windowWasResized)
+		{
+			windowWasResized = false;
+			
+		}
+
+
+		switch (zoomMode)
+		{
+		case stay:
+			break;
+		case in:
+			view_matrix = glm::translate(view_matrix, zoomSpeed * glm::vec3(0.0f, 0.0f, 1.0f));
+			break;
+		case out:
+			view_matrix = glm::translate(view_matrix, zoomSpeed * glm::vec3(0.0f, 0.0f, -1.0f));
+			break;
+		default:
+			break;
+		}
+
 		
 		
 
@@ -594,16 +650,16 @@ int main() {
 		case ArrowKeys::none:
 			break;
 		case ArrowKeys::left:
-			model_matrix =  glm::rotate(model_matrix, 0.025f, glm::vec3(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix =  glm::rotate(model_matrix, rotatationSpeed, glm::vec3(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::right:
-			model_matrix = glm::rotate(model_matrix, 0.025f, glm::vec3(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, rotatationSpeed, glm::vec3(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::up:
-			model_matrix = glm::rotate(model_matrix, 0.025f, glm::vec3(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, rotatationSpeed, glm::vec3(glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		case ArrowKeys::down:
-			model_matrix = glm::rotate(model_matrix, 0.025f, glm::vec3(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
+			model_matrix = glm::rotate(model_matrix, rotatationSpeed, glm::vec3(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * model_matrix));
 			break;
 		default:
 			break;
