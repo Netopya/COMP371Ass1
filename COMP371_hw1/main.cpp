@@ -99,7 +99,15 @@ void keyPressed(GLFWwindow *_window, int key, int scancode, int action, int mods
 		case GLFW_KEY_DOWN:
 			arrowKey = ArrowKeys::down;
 			break;
-		
+		case GLFW_KEY_P:
+			viewMode = ViewMode::points;
+			break;
+		case GLFW_KEY_W:
+			viewMode = ViewMode::wireframe;
+			break;
+		case GLFW_KEY_T:
+			viewMode = ViewMode::triangles;
+			break;
 
 		default: break;
 		}
@@ -610,20 +618,34 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-		//glDrawArrays(GL_POINTS, 0, points_buffer_size / 3);
 
-		glDrawArrays(GL_LINES, linesOffset / 3, lines_buffer_size / 3);
-
-		for (int i = 0; i < numStrips; i++)
+		switch (viewMode)
 		{
-			glDrawArrays(GL_LINE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
+		case points:
+			glDrawArrays(GL_POINTS, 0, points_buffer_size / 3);
+			break;
+		case wireframe:
+			glDrawArrays(GL_LINES, linesOffset / 3, lines_buffer_size / 3);
+
+			for (int i = 0; i < numStrips; i++)
+			{
+				glDrawArrays(GL_LINE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
+			}
+			break;
+		case triangles:
+			for (int i = 0; i < numStrips; i++)
+			{
+				glDrawArrays(GL_TRIANGLE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
+			}
+			break;
+		default:
+			break;
 		}
+
+		
 
 		// Draw the triangle !
-		for (int i = 0; i < numStrips; i++)
-		{
-			//glDrawArrays(GL_TRIANGLE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
-		}
+		
 		//glDrawArrays(GL_TRIANGLE_STRIP, numStripLength, numStripLength);
 
 		//glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
