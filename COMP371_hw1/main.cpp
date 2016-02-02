@@ -40,8 +40,7 @@ glm::mat4 proj_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
-glm::mat4 up_matrix = {0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
-
+// enums to hold keyboard and mouse input
 enum ArrowKeys {none, left, right, up, down};
 ArrowKeys arrowKey;
 
@@ -55,12 +54,16 @@ GLuint VBO, VAO, EBO;
 
 GLfloat point_size = 3.0f;
 
+// Array to hold all the vertices sent to the GPU
 GLfloat* g_vertex_buffer_data;
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
+// Whether we are in translational or rotational mode
 int mode;
 
+
+// Buffers to hold vertices of different drawing modes
 GLfloat* points_buffer;
 int points_buffer_size;
 GLfloat* lines_buffer;
@@ -73,6 +76,7 @@ int numStripLength;
 const float rotatationSpeed = 0.025f;
 const float zoomSpeed = 0.05f;
 
+// Helper function to convert vec3's into a formatted string
 string vec3tostring(glm::vec3 vec)
 {
 	std::stringstream ss;
@@ -113,16 +117,14 @@ void keyPressed(GLFWwindow *_window, int key, int scancode, int action, int mods
 		case GLFW_KEY_T:
 			viewMode = ViewMode::triangles;
 			break;
-
 		default: break;
 		}
 	}
-
 	
 	return;
 }
 
-
+// Handle mouse button input
 void mouseButtonPressed(GLFWwindow *_window, int button, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
@@ -145,6 +147,7 @@ void mouseButtonPressed(GLFWwindow *_window, int button, int action, int mods)
 	}
 }
 
+// Handle the window resizing, set the viewport and recompute the perspective
 void windowResized(GLFWwindow *windows, int width, int height)
 {
 	glViewport(0, 0, width, height);
@@ -169,7 +172,8 @@ bool initialize() {
 
 	int w, h;
 	glfwGetWindowSize(window, &w, &h);
-	///Register the keyboard callback function: keyPressed(...)
+
+	///Register the keyboard, mouse, and window resize callback
 	glfwSetKeyCallback(window, keyPressed);
 	glfwSetMouseButtonCallback(window, mouseButtonPressed);
 	glfwSetWindowSizeCallback(window, windowResized);
@@ -376,24 +380,22 @@ int main() {
 		points_buffer_size = points.size() * 3;
 		points_buffer = new GLfloat[points_buffer_size];
 
-		cout << endl;
-
-		// Covert all the point vectors into a single array
+		// Convert all the point vectors into a single array
 		for (unsigned i = 0; i < points.size(); i++)
 		{
 			points_buffer[i * 3] = points[i].x;
 			points_buffer[i * 3 + 1] = points[i].y;
 			points_buffer[i * 3 + 2] = points[i].z;
-
-			// Debug output
-			cout << vec3tostring(points[i]) << endl;
 		}
 
+		// Create the array to hold lines
 		lines_buffer_size = (trajectory.size() - 1) * profile.size() * 6;
 		lines_buffer = new GLfloat[lines_buffer_size];
 
+		// Offset between one trajectory and the next
 		int ts = (trajectory.size() - 1) * 6;
 
+		// Calculate the From and To vertices of all lines and add them to the array
 		for (unsigned i = 0; i < profile.size(); i++)
 		{
 			for (unsigned j = 0; j < trajectory.size() - 1; j++)
@@ -405,16 +407,7 @@ int main() {
 				lines_buffer[i * ts + j * 6 + 3] = profile[i].x + trajectory[j + 1].x;
 				lines_buffer[i * ts + j * 6 + 4] = profile[i].y + trajectory[j + 1].y;
 				lines_buffer[i * ts + j * 6 + 5] = profile[i].z + trajectory[j + 1].z;
-
-				cout << lines_buffer[i * ts + j * 6] << " " << lines_buffer[i * ts + j * 6 + 1] << " " << lines_buffer[i * ts + j * 6 + 2] << " to " << lines_buffer[i * ts + j * 6 + 3] << " " << lines_buffer[i * ts + j * 6 + 4] << " " << lines_buffer[i * ts + j * 6 + 5] << " " << endl;
 			}
-		}
-		
-		//cout << "full"
-
-		for (int i = 0; i < lines_buffer_size / 6; i++)
-		{
-			cout << lines_buffer[i + 0] << " " << lines_buffer[i + 1] << " " << lines_buffer[i + 2] << " to " << lines_buffer[i + 3] << " " << lines_buffer[i + 4] << " " << lines_buffer[i + 5] << endl;
 		}
 
 		vector<glm::vec3> trianglePoints;
@@ -422,22 +415,20 @@ int main() {
 		numStrips = profile.size() - 1;
 		numStripLength = trajectory.size() * 2;
 
-		cout << endl << " TRIANGLE DATA " << endl;
-
+		// Calculate the points required in order to create a triangle strip
 		for (unsigned i = 0; i < profile.size() - 1; i++)
 		{
 			for (unsigned j = 0; j < trajectory.size(); j++)
 			{
 				trianglePoints.push_back(glm::vec3(profile[i] + trajectory[j]));
 				trianglePoints.push_back(glm::vec3(profile[i + 1] + trajectory[j]));
-
-				cout << vec3tostring(trianglePoints[trianglePoints.size() - 2]) << " " << vec3tostring(trianglePoints[trianglePoints.size() - 1]) << endl;
 			}
 		}
 
 		triangles_buffer_size = trianglePoints.size() * 3;
 		triangles_buffer = new GLfloat[triangles_buffer_size];
 
+		// Convert all the triangle vectors into a single array
 		for (int i = 0; i < triangles_buffer_size / 3; i++)
 		{
 			triangles_buffer[i * 3] = trianglePoints[i].x;
@@ -448,6 +439,9 @@ int main() {
 	else
 	{
 		int spans = 10;
+
+		
+
 		//spans = mode;
 		GLfloat angle = 2 * M_PI / spans;
 
@@ -456,6 +450,7 @@ int main() {
 		
 		vector<glm::vec3> profile;
 
+		// Collect all the points
 		for (int i = 0; i < profileSize; i++)
 		{
 			GLfloat x, y, z;
@@ -465,6 +460,7 @@ int main() {
 
 		vector<glm::vec3> points(profile);
 
+		// Calculate new points by rotating the points in the previous span
 		for (int i = 1; i < spans; i++)
 		{
 			for (unsigned j = 0; j < profile.size(); j++)
@@ -492,17 +488,11 @@ int main() {
 
 		int ts = (profile.size() - 1) * 6;
 
+		// Create lines by calculating the original and destination verticies
 		for (unsigned i = 0; i < spans; i++)
 		{
 			for (unsigned j = 0; j < profile.size() - 1; j++)
 			{
-
-				//assert(i * ts + j * 6 > lines_buffer_size);
-				if (i * ts + j * 6 >= lines_buffer_size)
-				{
-					cout << "foo";
-				}
-
 				lines_buffer[i * ts + j * 6] = points[i * profile.size() + j].x;
 				lines_buffer[i * ts + j * 6 + 1] = points[i * profile.size() + j].y;
 				lines_buffer[i * ts + j * 6 + 2] = points[i * profile.size() + j].z;
@@ -510,8 +500,6 @@ int main() {
 				lines_buffer[i * ts + j * 6 + 3] = points[i * profile.size() + j + 1].x;
 				lines_buffer[i * ts + j * 6 + 4] = points[i * profile.size() + j + 1].y;
 				lines_buffer[i * ts + j * 6 + 5] = points[i * profile.size() + j + 1].z;
-
-				cout << lines_buffer[i * ts + j * 6] << " " << lines_buffer[i * ts + j * 6 + 1] << " " << lines_buffer[i * ts + j * 6 + 2] << " to " << lines_buffer[i * ts + j * 6 + 3] << " " << lines_buffer[i * ts + j * 6 + 4] << " " << lines_buffer[i * ts + j * 6 + 5] << " " << endl;
 			}
 		}
 
@@ -520,8 +508,7 @@ int main() {
 		numStrips = spans;
 		numStripLength = profile.size() * 2;
 
-		cout << endl << " TRIANGLE DATA " << endl;
-
+		// Create triangle by ordering points to create a triangle strip
 		for (unsigned i = 0; i < spans; i++)
 		{
 			for (unsigned j = 0; j < profile.size(); j++)
@@ -531,6 +518,7 @@ int main() {
 				unsigned neighbourPoint;
 				if (i == spans - 1)
 				{
+					// The last span should connect to the first span
 					neighbourPoint = j;
 				}
 				else
@@ -539,14 +527,13 @@ int main() {
 				}
 
 				trianglePoints.push_back(glm::vec3(points[neighbourPoint]));
-
-				cout << vec3tostring(trianglePoints[trianglePoints.size() - 2]) << " " << vec3tostring(trianglePoints[trianglePoints.size() - 1]) << endl;
 			}
 		}
 
 		triangles_buffer_size = trianglePoints.size() * 3;
 		triangles_buffer = new GLfloat[triangles_buffer_size];
 
+		// Convert all the vectors into a single array
 		for (int i = 0; i < triangles_buffer_size / 3; i++)
 		{
 			triangles_buffer[i * 3] = trianglePoints[i].x;
@@ -555,13 +542,16 @@ int main() {
 		}
 	}
 
+	// Combine all the sets of vertices into a single buffer
 	int vertex_buffer_size, linesOffset, trianglesOffset;
 	vertex_buffer_size = points_buffer_size + lines_buffer_size + triangles_buffer_size;
 	g_vertex_buffer_data = new GLfloat[vertex_buffer_size];
 
+	// Calculate the offset that different shapes with be at in the buffer
 	linesOffset = points_buffer_size;
 	trianglesOffset = points_buffer_size + lines_buffer_size;
 
+	// Move the vertex info into the buffer
 	for (int i = 0; i < points_buffer_size; i++)
 	{
 		g_vertex_buffer_data[i] = points_buffer[i];
@@ -579,9 +569,6 @@ int main() {
 
 	initialize();
 
-	
-
-
 	///Load the shaders
 	shader_program = loadShaders("COMP371_hw1.vs", "COMP371_hw1.fs");
 
@@ -594,7 +581,6 @@ int main() {
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(triangles_buffer) * triangles_buffer_size, triangles_buffer, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data) * vertex_buffer_size, g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
@@ -607,7 +593,7 @@ int main() {
 		(void*)0            // array buffer offset
 		);
 
-
+	// Start with the camera back a bit
 	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f));
 	proj_matrix = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 50.0f);
 
@@ -619,15 +605,7 @@ int main() {
 
 		glUseProgram(shader_program);
 
-		//proj_matrix = glm::perspective(200.0f, 1.0f, -5.0f, 5.0f);
-
-		if (windowWasResized)
-		{
-			windowWasResized = false;
-			
-		}
-
-
+		// If we are zooming, translate the camera forward or backwards
 		switch (zoomMode)
 		{
 		case stay:
@@ -642,9 +620,7 @@ int main() {
 			break;
 		}
 
-		
-		
-
+		// Depending on the pressed arrow key, rotate the model relative to the real world up direction
 		switch (arrowKey)
 		{
 		case ArrowKeys::none:
@@ -664,7 +640,6 @@ int main() {
 		default:
 			break;
 		}
-
 		
 
 		//Pass the values of the three matrices to the shaders
@@ -674,21 +649,26 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-
+		// Depending on the view mode, draw a different set of vertices
 		switch (viewMode)
 		{
 		case points:
+			// Draw points
 			glDrawArrays(GL_POINTS, 0, points_buffer_size / 3);
 			break;
 		case wireframe:
+			
+			// Draw the lines going accross the trajectories or the spans
 			glDrawArrays(GL_LINES, linesOffset / 3, lines_buffer_size / 3);
 
+			// Draw the lines going accross and between the trajectories or the spans
 			for (int i = 0; i < numStrips; i++)
 			{
 				glDrawArrays(GL_LINE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
 			}
 			break;
 		case triangles:
+			// Draw the triangles using triangle strips
 			for (int i = 0; i < numStrips; i++)
 			{
 				glDrawArrays(GL_TRIANGLE_STRIP, trianglesOffset / 3 + i * numStripLength, numStripLength);
@@ -696,17 +676,7 @@ int main() {
 			break;
 		default:
 			break;
-		}
-
-		
-
-		// Draw the triangle !
-		
-		//glDrawArrays(GL_TRIANGLE_STRIP, numStripLength, numStripLength);
-
-		//glDrawArrays(GL_LINES, 0, lines_buffer_size / 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
-
-		
+		}	
 
 		glBindVertexArray(0);
 
