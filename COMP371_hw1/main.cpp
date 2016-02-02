@@ -310,6 +310,7 @@ GLuint loadShaders(std::string vertex_shader_path, std::string fragment_shader_p
 
 int main() {
 
+	// Ask the user for the input file
 	cout << "Enter the name of the file" << endl;
 
 	string filename;
@@ -435,19 +436,9 @@ int main() {
 	{
 		int spans;
 
-		cout << "A number of " << mode << " spans for the rotational sweep was detected." << endl << " 0. Proceed with " << mode << " spans" << endl << " 1. Enter custom amount" << endl;
-		int choice;
-		cin >> choice;
-		if (choice == 0)
-		{
-			spans = mode;
-		}
-		else
-		{
-			cout << "How many spans would you like to have?" << endl;
-			cin >> spans;
-		}
-
+		// Read the number of sweeps
+		file >> spans;
+		
 		GLfloat angle = 2 * M_PI / spans;
 
 		int profileSize;
