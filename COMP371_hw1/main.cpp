@@ -310,15 +310,10 @@ GLuint loadShaders(std::string vertex_shader_path, std::string fragment_shader_p
 
 int main() {
 
-	cout << "Enter the name of the file";
+	cout << "Enter the name of the file" << endl;
 
 	string filename;
-	//cin >> filename;
-
-	//filename = "translational_shape.out";
-	//filename = "translational_hollow_box.out";
-	filename = "rotational_cup.out";
-	//filename = "rotational_hat.out";
+	cin >> filename;
 
 	file.open(filename, ios::in);
 
@@ -438,11 +433,21 @@ int main() {
 	}
 	else
 	{
-		int spans = 10;
+		int spans;
 
-		
+		cout << "A number of " << mode << " spans for the rotational sweep was detected." << endl << " 0. Proceed with " << mode << " spans" << endl << " 1. Enter custom amount" << endl;
+		int choice;
+		cin >> choice;
+		if (choice == 0)
+		{
+			spans = mode;
+		}
+		else
+		{
+			cout << "How many spans would you like to have?" << endl;
+			cin >> spans;
+		}
 
-		//spans = mode;
 		GLfloat angle = 2 * M_PI / spans;
 
 		int profileSize;
